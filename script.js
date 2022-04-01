@@ -5,7 +5,7 @@ var ctx = canvas.getContext("2d");
 const BRICK_WIDTH = 60;
 const BRICK_HEIGHT = 20;
 const BRICK_X = 10;
-const BRICK_Y = 220;
+const BRICK_Y = 270;
 const BRICK_COLORS = 
 [["#607d8b","#4d646f", "#3a4b53 ", "#303f46", "#263238", "#1d262a", "#56717d", "#13191c"], 
 ["#4b3832", "#854442","#fff4e6", "#3c2f2f","#be9b7b"], 
@@ -25,7 +25,7 @@ const BALL_RADIUS = 10;
 const BALL_CENTERX = 460;
 const BALL_CENTERY = PLAYER1_START_Y - 20;
 const BALL_COLOR = "#22352B"
-const BALL_VELOCITY = 10;
+const BALL_VELOCITY = 5;
 const CANVAS_HEIGHT = 700;
 const CANVAS_WIDTH = 1000;
 
@@ -238,7 +238,7 @@ function checkCollision(ball){
         }else{
             ball.bounce_direction = 1;
         }
-        ball.bounce_direction *= (Math.random()* 3);
+        collision = true;
     }
     else if(player2.y - PLAYER_HEIGHT/2 <= ball.y && ball.y <= player2.y + PLAYER_HEIGHT/2 &&
      player2.x-10 <= ball.x && ball.x <= player2.x + PLAYER_WIDTH+10) {
@@ -248,7 +248,7 @@ function checkCollision(ball){
         }else{
             ball.bounce_direction = 1;
         }
-        ball.bounce_direction *= (Math.random() *3);
+        collision = true;
     }
     else{
         for(const brick of gameBrickList){
@@ -260,18 +260,27 @@ function checkCollision(ball){
                     }else{
                         ball.bounce_direction = 1;
                     }
-                    ball.bounce_direction *= (Math.random() * 3 );
                     brick.hit = true;
+                    collision = true;
                     break;
                 }
             }
         }
+    }
+    if( ball.collision){
+        ball.bounce_direction *= (Math.random() * 3 );
+        ball.v *= 1.01;
+
     }
 
 }
 
 function checkGameOver(){
     if(checkBallBounds(ball1) && checkBallBounds(ball2)){
+        gameOver == true;
+        startGame();
+    }
+    if(gameBrickList.length == 0){
         gameOver == true;
         startGame();
     }
