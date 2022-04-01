@@ -38,7 +38,6 @@ var gameBrickList = [];
 var player1;
 var player2;
 var ball;
-var bot = true;
 
 
 startGame();
@@ -77,6 +76,7 @@ function Player(width, height, color, x, y){
     this.y = y;
     this.move_left = false;
     this.move_right = false;
+    this.bot = true;
 
 }
 
@@ -108,19 +108,19 @@ function drawBrick(brick){
     }
 }
 
-function drawPlayer(player, bot){
+function drawPlayer(player){
     if(player.move_left){
         player.x -= PLAYER_SPEED;
     }
     else if(player.move_right){
         player.x += PLAYER_SPEED;
     }
-    if(bot && ball2.v != 0){
+    if(player.bot && ball2.v != 0){
         if(Math.abs(player.y - ball1.y) < Math.abs(player.y - ball2.y) && !ball1.out){
-            player.x -= (player.x - ball1.x + 30) / PLAYER_SPEED;
+            player.x -= (player.x - ball1.x + 30) ;
         }
         else if(!ball2.out){
-            player.x -= (player.x - ball2.x + 30) / PLAYER_SPEED;
+            player.x -= (player.x - ball2.x + 30);
         }
     }
     ctx.fillStyle = player.c;
@@ -141,8 +141,8 @@ function drawBall(ball, player){
 
 function render(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawPlayer(player1, bot);
-    drawPlayer(player2, bot);
+    drawPlayer(player1);
+    drawPlayer(player2);
     if(!ball1.out){
         moveBall(ball1);
         drawBall(ball1, player1);
@@ -190,15 +190,19 @@ document.body.onkeyup = function( e ){
 function movePlayer(dir, s){
     if(dir == "left"){
         player1.move_left = s;
+        player1.bot = false;
     }
     if(dir == "right"){
         player1.move_right = s;
+        player1.bot = false;
     }
     if(dir == "a"){
         player2.move_left = s;
+        player2.bot = false;
     }
     if(dir == "d"){
         player2.move_right = s;
+        player2.bot = false;
     }
     if(dir == "space"){
         startBallMoving();
