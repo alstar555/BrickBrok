@@ -25,7 +25,7 @@ const BALL_RADIUS = 10;
 const BALL_CENTERX = 460;
 const BALL_CENTERY = PLAYER1_START_Y - 20;
 const BALL_COLOR = "#22352B"
-const BALL_VELOCITY = 5;
+const BALL_VELOCITY = 3.5;
 const CANVAS_HEIGHT = 700;
 const CANVAS_WIDTH = 1000;
 
@@ -38,16 +38,20 @@ var gameBrickList = [];
 var player1;
 var player2;
 var ball;
+var gameBallList = [];
 
 
 startGame();
 render();
+
+
 
 function startGame(){
     player1 = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_COLOR, PLAYER1_START_X, PLAYER1_START_Y);
     player2 = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_COLOR, PLAYER2_START_X, PLAYER2_START_Y);
     ball1 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY, BALL_COLOR);
     ball2 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY - 540, BALL_COLOR);
+    gameBallList.push(ball1, ball2);
 
     gameOver = false;
     gameScore = 0;
@@ -116,20 +120,27 @@ function drawPlayer(player){
         player.x += PLAYER_SPEED;
     }
     if(player.bot && ball2.v != 0){
-        if(Math.abs(player.y - ball1.y) < Math.abs(player.y - ball2.y) && !ball1.out){
-            player.x -= (player.x - ball1.x + 30) ;
+        var closest_ball = 10000;
+        for(const b of gameBallList){
+            if(!b.out){
+                closest_ball = Math.min(closest_ball, Math.abs(player.y - b.y));
+            }
         }
-        else if(!ball2.out){
-            player.x -= (player.x - ball2.x + 30);
+        for(const b of gameBallList){
+            if(Math.abs(player.y - b.y) == closest_ball){
+                player.x -= (player.x - b.x + 30)/PLAYER_SPEED;
+                break;
+            }
         }
     }
     ctx.fillStyle = player.c;
     ctx.fillRect(player.x, player.y, player.w, player.h);
 }
 
-function drawBall(ball, player){
+function drawBall(ball){
     if(ball.v == 0){ //keep ball under player
-        ball.x = player.x + 32;
+        ball1.x = player1.x + 32;
+        ball2.x = player2.x + 32;
     }
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI);
@@ -143,14 +154,11 @@ function render(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer(player1);
     drawPlayer(player2);
-    if(!ball1.out){
-        moveBall(ball1);
-        drawBall(ball1, player1);
+    for(const b of gameBallList){
+        moveBall(b);
+        drawBall(b);
     }
-    if(!ball2.out){
-        moveBall(ball2);
-        drawBall(ball2, player2);
-    }
+
     for(const brick of gameBrickList){
         drawBrick(brick);
     }
@@ -227,7 +235,7 @@ function moveBall(ball){
 
 function checkCollision(ball){
     if(ball.x < 0 || CANVAS_WIDTH < ball.x ){
-        ball.x *= -1;
+        ball.bounce_direction *= -1;
     }
 
     if(player1.y - PLAYER_HEIGHT/2 <= ball.y && ball.y <= player1.y + PLAYER_HEIGHT/2 &&
@@ -238,7 +246,7 @@ function checkCollision(ball){
         }else{
             ball.bounce_direction = 1;
         }
-        collision = true;
+        ball.bounce_direction *= (Math.random() * 3 );
     }
     else if(player2.y - PLAYER_HEIGHT/2 <= ball.y && ball.y <= player2.y + PLAYER_HEIGHT/2 &&
      player2.x-10 <= ball.x && ball.x <= player2.x + PLAYER_WIDTH+10) {
@@ -248,7 +256,7 @@ function checkCollision(ball){
         }else{
             ball.bounce_direction = 1;
         }
-        collision = true;
+        ball.bounce_direction *= (Math.random() * 3 );
     }
     else{
         for(const brick of gameBrickList){
@@ -256,19 +264,17 @@ function checkCollision(ball){
                 if(ball.y <= brick.y + PLAYER_HEIGHT && ball.y >= brick.y - PLAYER_HEIGHT && brick.x-PLAYER_WIDTH <= ball.x && ball.x <= brick.x + PLAYER_WIDTH ){
                     ball.collision = true;
                     if(ball.x <= brick.x + PLAYER_WIDTH/2){
-                        ball.bounce_direction = -1;
-                    }else{
-                        ball.bounce_direction = 1;
+                        ball.bounce_direction *= -1;
                     }
                     brick.hit = true;
                     collision = true;
+                    spawnNewBall(brick);
                     break;
                 }
             }
         }
     }
     if( ball.collision){
-        ball.bounce_direction *= (Math.random() * 3 );
         ball.v *= 1.01;
 
     }
@@ -276,14 +282,27 @@ function checkCollision(ball){
 }
 
 function checkGameOver(){
-    checkBallBounds(ball1);
-    checkBallBounds(ball2);
-    if(ball1.out && ball2.out){
-        gameOver == true;
-        startGame();
+    new_game = true;
+    //check all bricks are still here
+    for(const b of gameBrickList){
+        if(!b.hit){
+            new_game = false;
+            break;
+        }
     }
-    if(gameBrickList.length == 0){
-        gameOver == true;
+    if(new_game){
+        startGame();
+        return;
+    }
+    new_game = true;
+    //check at one least balls in bounds
+    for(const b of gameBallList){
+        if(!checkBallBounds(b)){
+            return;
+        }
+    }
+    console.log("ok");
+    if(new_game){
         startGame();
     }
 }
@@ -294,5 +313,12 @@ function checkBallBounds(ball){
         return true;
     }
     return false;
+}
 
+function spawnNewBall(brick){ 
+    if(Math.floor(Math.random()*10)%5 == 0){
+        var new_ball = new Ball(BALL_RADIUS, brick.x, brick.y, BALL_COLOR);
+        new_ball.v = BALL_VELOCITY;
+        gameBallList.push(new_ball);
+    }
 }
