@@ -25,7 +25,7 @@ const BALL_RADIUS = 10;
 const BALL_CENTERX = 460;
 const BALL_CENTERY = PLAYER1_START_Y - 20;
 const BALL_COLOR = "#22352B"
-const BALL_VELOCITY = 1;
+const BALL_VELOCITY = 5;
 const CANVAS_HEIGHT = 700;
 const CANVAS_WIDTH = 1000;
 
@@ -276,6 +276,8 @@ function checkCollision(ball){
 }
 
 function checkGameOver(){
+    checkBallBounds(ball1);
+    checkBallBounds(ball2);
     if(ball1.out && ball2.out){
         gameOver == true;
         startGame();
@@ -287,7 +289,7 @@ function checkGameOver(){
 }
 
 function checkBallBounds(ball){
-    if((CANVAS_HEIGHT < ball1.y || ball1.y < 0) ){
+    if((CANVAS_HEIGHT < ball.y || ball.y < 0) ){
         ball.out = true;
         return true;
     }
