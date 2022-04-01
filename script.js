@@ -49,8 +49,8 @@ render();
 function startGame(){
     player1 = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_COLOR, PLAYER1_START_X, PLAYER1_START_Y);
     player2 = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_COLOR, PLAYER2_START_X, PLAYER2_START_Y);
-    ball1 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY, BALL_COLOR);
-    ball2 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY - 540, BALL_COLOR);
+    ball1 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY, BALL_COLOR, 1);
+    ball2 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY - 540, BALL_COLOR, 2);
     gameBallList.push(ball1, ball2);
 
     gameOver = false;
@@ -81,10 +81,11 @@ function Player(width, height, color, x, y){
     this.move_left = false;
     this.move_right = false;
     this.bot = true;
+    this.score = 0;
 
 }
 
-function Ball(radius, centerx, centery, color){
+function Ball(radius, centerx, centery, color, player){
     this.r = radius;
     this.x = centerx;
     this.y = centery;
@@ -93,6 +94,7 @@ function Ball(radius, centerx, centery, color){
     this.collision = false;
     this.bounce_direction = 0;
     this.out = false;
+    this.player = player;
 
 }
 
@@ -150,10 +152,18 @@ function drawBall(ball){
     checkGameOver(ball);
 }
 
+function drawScore(){
+    console.log("hi");
+    ctx.font = '30px serif';
+    ctx.fillText('SCORE: ' + player1.score, 800, 650);
+    ctx.fillText('SCORE: ' + player2.score, 10, 50);
+}
+
 function render(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer(player1);
     drawPlayer(player2);
+    drawScore();
     for(const b of gameBallList){
         moveBall(b);
         drawBall(b);
@@ -247,6 +257,7 @@ function checkCollision(ball){
             ball.bounce_direction = 1;
         }
         ball.bounce_direction *= (Math.random() * 3 );
+        ball.player = 1;
     }
     else if(player2.y - PLAYER_HEIGHT/2 <= ball.y && ball.y <= player2.y + PLAYER_HEIGHT/2 &&
      player2.x-10 <= ball.x && ball.x <= player2.x + PLAYER_WIDTH+10) {
@@ -257,6 +268,7 @@ function checkCollision(ball){
             ball.bounce_direction = 1;
         }
         ball.bounce_direction *= (Math.random() * 3 );
+        ball.player = 2;
     }
     else{
         for(const brick of gameBrickList){
@@ -267,8 +279,8 @@ function checkCollision(ball){
                         ball.bounce_direction *= -1;
                     }
                     brick.hit = true;
-                    collision = true;
                     spawnNewBall(brick);
+                    addScore(ball);
                     break;
                 }
             }
@@ -320,5 +332,14 @@ function spawnNewBall(brick){
         var new_ball = new Ball(BALL_RADIUS, brick.x, brick.y, BALL_COLOR);
         new_ball.v = BALL_VELOCITY;
         gameBallList.push(new_ball);
+    }
+}
+
+function addScore(ball){
+    if(ball.player == 1){
+        player1.score += 100;
+    }
+    else if(ball.player == 2){
+        player2.score += 100;
     }
 }
