@@ -29,8 +29,7 @@ const BALL_VELOCITY = 4;
 const CANVAS_HEIGHT = 700;
 const CANVAS_WIDTH = 1000;
 
-
-
+var highscore = localStorage.getItem("highscore");
 var gameScore;
 var gameOver;
 var gameBrick;
@@ -53,7 +52,7 @@ function startGame(){
     ball1 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY, BALL_COLOR, 1);
     ball2 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY - 540, BALL_COLOR, 2);
     gameBallList.push(ball1, ball2);
-
+    
     gameOver = false;
     gameScore = 0;
     gameBrickList = [];
@@ -73,9 +72,7 @@ function startGame(){
     }
 }
 
-function newGame(){
-    ball1 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY, BALL_COLOR, 1);
-    ball2 = new Ball(BALL_RADIUS, BALL_CENTERX, BALL_CENTERY - 540, BALL_COLOR, 2);
+function newLevel(){
     gameBallList.push(ball1, ball2);
 
     gameOver = false;
@@ -108,7 +105,8 @@ function Player(width, height, color, x, y, num){
     this.move_right = false;
     this.bot = true;
     this.score = 0;
-
+    this.can_highscore = false;
+    
 }
 
 function Ball(radius, centerx, centery, color, player){
@@ -121,7 +119,7 @@ function Ball(radius, centerx, centery, color, player){
     this.bounce_direction = 0;
     this.out = false;
     this.player = player;
-
+    
 }
 
 function Brick(width, height, color, x, y){
@@ -184,11 +182,16 @@ function drawScore(){
     ctx.fillText('SCORE: ' + player2.score, 10, 50);
 }
 
+function drawHighscore(){
+    ctx.font = '30px serif';
+    ctx.fillText('HIGHSCORE: ' + highscore, 10, 650);
+}
 function render(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlayer(player1);
     drawPlayer(player2);
     drawScore();
+    drawHighscore();
     for(const b of gameBallList){
         moveBall(b);
         drawBall(b);
@@ -269,6 +272,13 @@ function moveBall(ball){
 }
 
 function checkCollision(ball){
+    if(!player1.bot && player1.score <= 200){
+        player1.can_highscore = true;
+    }
+    else if(!player2.bot && player2.score <= 200){
+        player2.can_highscore = true;
+    }
+
     if(ball.x < 0 || CANVAS_WIDTH < ball.x ){
         ball.bounce_direction *= -1;
     }
@@ -346,7 +356,7 @@ function checkGameOver(){
         }
     }
     if(new_game){
-        newGame();
+        newLevel();
         return;
     }
     new_game = true;
@@ -357,6 +367,14 @@ function checkGameOver(){
         }
     }
     if(new_game){
+        console.log(1);
+        if(player1.can_highscore){
+            localStorage.setItem("highscore", Math.max(highscore, player1.score));
+        }
+        if(player2.can_highscore){
+            localStorage.setItem("highscore", Math.max(highscore, player2.score));
+        }
+        highscore = localStorage.getItem("highscore");
         startGame();
     }
 }
