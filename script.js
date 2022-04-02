@@ -25,7 +25,7 @@ const BALL_RADIUS = 10;
 const BALL_CENTERX = 460;
 const BALL_CENTERY = PLAYER1_START_Y - 20;
 const BALL_COLOR = "#22352B"
-const BALL_VELOCITY = 3.5;
+const BALL_VELOCITY = 4;
 const CANVAS_HEIGHT = 700;
 const CANVAS_WIDTH = 1000;
 
@@ -155,7 +155,7 @@ function drawPlayer(player){
             }
         }
         for(const b of gameBallList){
-            if(Math.abs(player.y - b.y) == closest_ball){
+            if(Math.abs(player.y - b.y) == closest_ball && !b.out){
                 player.x -= (player.x - b.x + 30)/PLAYER_SPEED;
                 break;
             }
@@ -304,7 +304,7 @@ function checkCollision(ball){
             if(!brick.hit){
                 if(ball.y <= brick.y + PLAYER_HEIGHT && ball.y >= brick.y - PLAYER_HEIGHT && brick.x-PLAYER_WIDTH <= ball.x && ball.x <= brick.x + PLAYER_WIDTH ){
                     ball.collision = true;
-                    if(ball.x <= brick.x + PLAYER_WIDTH/2){
+                    if(ball.x <= brick.x + PLAYER_WIDTH){
                         ball.bounce_direction *= -1;
                     }
                     brick.hit = true;
@@ -370,7 +370,7 @@ function checkBallBounds(ball){
 }
 
 function spawnNewBall(brick){ 
-    if(Math.floor(Math.random()*10)%5 == 0){
+    if(Math.floor(Math.random()*10)%3 == 0){
         var new_ball = new Ball(BALL_RADIUS, brick.x, brick.y, BALL_COLOR);
         new_ball.v = BALL_VELOCITY;
         gameBallList.push(new_ball);
