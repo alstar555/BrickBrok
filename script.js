@@ -117,7 +117,6 @@ function Ball(radius, centerx, centery, color, player){
     this.v = 0;
     this.collision = false;
     this.bounce_direction = 0;
-    this.out = false;
     this.player = player;
     
 }
@@ -140,20 +139,24 @@ function drawBrick(brick){
 
 function drawPlayer(player){
     if(player.move_left){
-        player.x -= PLAYER_SPEED;
+        if(-35 <= player.x - PLAYER_SPEED ){
+            player.x -= PLAYER_SPEED;
+        }
     }
     else if(player.move_right){
-        player.x += PLAYER_SPEED;
+        if(player.x + PLAYER_SPEED <= CANVAS_WIDTH - PLAYER_WIDTH/2){
+            player.x += PLAYER_SPEED;
+        }
     }
     if(player.bot && ball2.v != 0){
         var closest_ball = 10000;
         for(const b of gameBallList){
-            if(!b.out && b.player != player.num){
+            if(b.player != player.num){
                 closest_ball = Math.min(closest_ball, Math.abs(player.y - b.y));
             }
         }
         for(const b of gameBallList){
-            if(Math.abs(player.y - b.y) == closest_ball && !b.out){
+            if(Math.abs(player.y - b.y) == closest_ball){
                 player.x -= (player.x - b.x + 30)/PLAYER_SPEED;
                 break;
             }
@@ -184,7 +187,7 @@ function drawScore(){
 
 function drawHighscore(){
     ctx.font = '30px serif';
-    ctx.fillText('HIGHSCORE: ' + highscore, 10, 650);
+    ctx.fillText('HIGHSCORE: ' + Math.max(0, highscore), 10, 650);
 }
 function render(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -292,7 +295,7 @@ function checkCollision(ball){
              }else{
                  ball.bounce_direction = 1;
              }
-             ball.bounce_direction *= (Math.random() * 3 );
+             ball.bounce_direction *= Math.abs(player1.x + PLAYER_WIDTH/2 - ball.x)/10;
              ball.player = 1;
          }
     }
@@ -305,7 +308,7 @@ function checkCollision(ball){
              }else{
                  ball.bounce_direction = 1;
              }
-             ball.bounce_direction *= (Math.random() * 3 );
+             ball.bounce_direction *= Math.abs(player2.x + PLAYER_WIDTH/2 - ball.x)/10;
              ball.player = 2;
          }
     }
@@ -326,16 +329,16 @@ function checkCollision(ball){
             }
         }
         for(const b of gameBallList){
-            if(!b.out){
-                if(ball.y == b.y && ball.x == b.y){
-                    ball.collision = true;
-                    b.bounce_direction *= -1;
-                    ball.bounce_direction *= -1;
-                    b.v *= 1.02;
-                    ball.bounce_direction *= (Math.random() * 6 );
-                    ball.player = 0;
-                    break;
-                }
+            if( b != ball &&
+                ball.y - BALL_RADIUS <= b.y && b.y <= ball.y + BALL_RADIUS &&
+                ball.x - BALL_RADIUS <= b.x && b.x <= ball.x + BALL_RADIUS){
+                ball.collision = true;
+                b.bounce_direction *= -1;
+                ball.bounce_direction *= -1;
+                b.v *= 1.01;
+                ball.bounce_direction *= (Math.random() * 3 );
+                ball.player = 0;
+                break;
             }
         }
     }
@@ -363,11 +366,10 @@ function checkGameOver(){
     //check at one least balls in bounds
     for(const b of gameBallList){
         if(!checkBallBounds(b)){
-            return;
+            new_game = false;
         }
     }
     if(new_game){
-        console.log(1);
         if(player1.can_highscore){
             localStorage.setItem("highscore", Math.max(highscore, player1.score));
         }
@@ -381,7 +383,7 @@ function checkGameOver(){
 
 function checkBallBounds(ball){
     if((CANVAS_HEIGHT < ball.y || ball.y < 0) ){
-        ball.out = true;
+        gameBallList = gameBallList.filter(object => {return object != ball;});
         return true;
     }
     return false;
