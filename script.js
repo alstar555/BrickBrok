@@ -1,5 +1,7 @@
+//canvas
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
+document.body.style.zoom="80%"
 
 //constants
 const BRICK_WIDTH = 60;
@@ -157,7 +159,7 @@ function drawPlayer(player){
         }
         for(const b of gameBallList){
             if(Math.abs(player.y - b.y) == closest_ball){
-                player.x -= (player.x - b.x + 30)/PLAYER_SPEED;
+                player.x -= (player.x - b.x + 31)/PLAYER_SPEED;
                 break;
             }
         }
