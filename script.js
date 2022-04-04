@@ -40,7 +40,8 @@ var player1;
 var player2;
 var ball;
 var gameBallList = [];
-
+var alpha;
+var alpha2 = 0.5;
 
 
 startGame();
@@ -191,8 +192,37 @@ function drawHighscore(){
     ctx.font = '30px serif';
     ctx.fillText('HIGHSCORE: ' + Math.max(0, highscore), 10, 650);
 }
+
+function drawSpacetoStart(){
+    ctx.fillStyle = '#788575';
+    ctx.font = 'bold 40px serif';
+    ctx.globalAlpha = alpha;
+    ctx.fillText("SPACE to start", canvas.width/2 -150, 580);
+    ctx.globalAlpha = 1;
+}
+
+function drawArrows(){
+    console.log(alpha2);
+    if(player1.x != PLAYER1_START_X || player2.x != PLAYER2_START_X){
+        alpha2 -= .01;
+    }
+    if(alpha2 >= .1){
+        ctx.fillStyle = '#788575';
+        ctx.font = 'bold 20px serif';
+        ctx.globalAlpha = alpha2;
+        ctx.fillText("W", canvas.width/2 +55, 40);
+        ctx.fillText("A  S  D", canvas.width/2 + 35, 57);
+        ctx.font = 'bold 30px serif';
+        ctx.fillText("←↑→", canvas.width/2+10, 630);
+        ctx.fillText("↓", canvas.width/2+40, 650);
+        ctx.globalAlpha = 1;
+    }
+    
+}
+
 function render(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     drawPlayer(player1);
     drawPlayer(player2);
     drawScore();
@@ -201,10 +231,20 @@ function render(){
         moveBall(b);
         drawBall(b);
     }
-
+    
     for(const brick of gameBrickList){
         drawBrick(brick);
     }
+    if(ball1.v == 0){
+        alpha = 0.5;
+        drawSpacetoStart();
+    }
+    else if(alpha > 0.1){
+        alpha -= .01;
+        drawSpacetoStart();
+    }
+    drawArrows();
+
     requestAnimationFrame(render);
 }
 
